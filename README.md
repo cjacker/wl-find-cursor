@@ -25,6 +25,16 @@ Run `wl-find-cursor` directly, it will draw an animation (a rectangle) surround 
 
 If you only want to obtain the mouse coordinates, use `wl-find-cursor -p` to skip the animation.
 
+# How to enlarge the cursor size
+
+Usually I set cursor size to 64:
+```
+gsettings set org.gnome.desktop.interface cursor-size 64
+swaymsg seat seat0 xcursor_theme "$(gsettings get org.gnome.desktop.interface cursor-theme)" 64
+```
+And append `Xcursor.size: 64` to `~/.Xresources`.
+
+Above settings should work well with all applications include wayland/X/gtk and qt.
 
 # And more
 
