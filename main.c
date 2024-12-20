@@ -16,18 +16,22 @@
 #include "wlr-virtual-pointer-unstable-v1.h"
 #include "viewporter.h"
 
-// All what you can/want to change: 
-#define RED 0xd70000
-#define GREEN 0x009900
-#define BLUE 0x000021
-#define ALPHA 0xcf000000
+// All what you may want to change: 
+// color = ALPHA + RED + GREEN + BLUE
+#define ALPHA (0xcf << 24)
+#define RED (0xd7 << 16)
+#define GREEN (0x99 << 8)
+#define BLUE 0x21
+
 #define ANIMATION_DURATION_IN_SECOND 1
 
-
+// control show animation or not.
 bool no_animation = false;
 
+// false to exit
 bool running = true;
 
+// state
 struct wl_display *display = NULL;
 struct wl_registry *registry = NULL;
 struct wl_compositor *compositor = NULL;
@@ -36,24 +40,29 @@ struct zwlr_layer_shell_v1 *layer_shell = NULL;
 struct wp_viewporter *viewporter = NULL;
 struct wp_single_pixel_buffer_manager_v1 *single_pixel_buffer_manager = NULL;
 struct zwlr_virtual_pointer_manager_v1 *virtual_pointer_manager = NULL;
-struct zwlr_virtual_pointer_v1 *virtual_pointer = NULL;
-struct wl_pointer *pointer = NULL;
 
+// output
+// using NULL for focused output
 struct wl_output *output = NULL;
-
-struct wl_seat *seat = NULL;
 struct zwlr_layer_surface_v1 *layer_surface = NULL;
 struct wp_viewport *viewport = NULL;
-struct wl_shm *shm = NULL;
-struct wl_buffer *shm_buffer = NULL;
-
 struct wl_callback *frame_callback = NULL;
-
 int surface_width = 0;
 int surface_height = 0;
 
+// seat
+struct wl_seat *seat = NULL;
+struct wl_pointer *pointer = NULL;
+struct zwlr_virtual_pointer_v1 *virtual_pointer = NULL;
+// set it in pointer_handle_enter
 int cursor_x;
 int cursor_y;
+
+
+// shm
+struct wl_shm *shm = NULL;
+struct wl_buffer *shm_buffer = NULL;
+
 
 int64_t start_ms = 0;
 int64_t delay_ms = 0;
