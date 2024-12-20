@@ -41,7 +41,7 @@ wl-find-cursor && grim -g "$(slurp -d)"
 
 # How to enlarge the cursor size
 
-A large cursor will make thing easier, usually I set cursor size to 64:
+A large cursor will make things easier, usually I set cursor size to 64:
 
 ```
 gsettings set org.gnome.desktop.interface cursor-size 64
@@ -72,5 +72,5 @@ I use i3/sway for more than ten years, everything in i3/sway is flat rectangle.
 
 And I don't want to introduce cairo dependency and don't want to handle anti-alias issue manually, drawing square is toooo much simpler than circle.
 
-With cairo, you can draw something more complex very easy.
+With cairo, you can draw something more complex easily.
 
