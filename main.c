@@ -42,6 +42,9 @@ struct wl_callback *frame_callback = NULL;
 int surface_width = 0;
 int surface_height = 0;
 
+int cursor_x;
+int cursor_y;
+
 int64_t start_ms = 0;
 int64_t delay_ms = 0;
 
@@ -119,12 +122,23 @@ allocate_shm_file(size_t size)
 
 
 static void repaint_output(struct wl_output *output);
+static void update_pixels(uint32_t *pixels);
 
+static void frame_callback_handle_done(void *data, struct wl_callback *callback, uint32_t time) {
+  assert(callback == frame_callback);
+  wl_callback_destroy(callback);
+  frame_callback = NULL;
+  update_pixels((uint32_t *)data);
+}
+
+static const struct wl_callback_listener frame_callback_listener = {
+  .done = frame_callback_handle_done,
+};
 
 static void pointer_handle_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
 
-  int cursor_x = wl_fixed_to_int(surface_x);
-  int cursor_y = wl_fixed_to_int(surface_y);
+  cursor_x = wl_fixed_to_int(surface_x);
+  cursor_y = wl_fixed_to_int(surface_y);
 
   printf("%d %d\n", cursor_x, cursor_y);
 
@@ -143,7 +157,7 @@ static void pointer_handle_enter(void *data, struct wl_pointer *wl_pointer, uint
 
   uint32_t *pixels = (uint32_t *)&pool_data[offset];
 
-
+#if 0
   uint32_t half = (surface_height < surface_width ? surface_height : surface_width)/10;
 
   for (int y = 0; y < surface_height; y++) {
@@ -159,8 +173,9 @@ static void pointer_handle_enter(void *data, struct wl_pointer *wl_pointer, uint
         pixels[x + (y * surface_width)] = color;
     }
   }
+#endif
 
-  repaint_output(output);
+  update_pixels(pixels);
 
 } 
 
@@ -255,16 +270,43 @@ static const struct wl_registry_listener registry_listener = {
 };
 
 
-static void frame_callback_handle_done(void *data, struct wl_callback *callback, uint32_t time) {
-  assert(callback == frame_callback);
-  wl_callback_destroy(callback);
-  frame_callback = NULL;
-  repaint_output(output);
-}
+static void update_pixels(uint32_t *pixels) {
+  int64_t delta = now_ms() - start_ms;
+  double progress = (double)delta / delay_ms;
+  if (progress >= 1) {
+    running = false;
+  }
+  //uint32_t alpha = progress * UINT32_MAX ;
+ 
+  //don't use uint32_t here. since cursor_x - half can be negative. 
+	int half = (surface_height < surface_width ? surface_height : surface_width)/10;
 
-static const struct wl_callback_listener frame_callback_listener = {
-  .done = frame_callback_handle_done,
-};
+  half = half * progress;
+
+  for (int y = 0; y < surface_height; y++) {
+    if(y < cursor_y - half || y > cursor_y + half)
+      continue;
+    for (int x = 0; x < surface_width; x++) {
+      if(x < cursor_x - half || x > cursor_x + half)
+        continue;                                                                                                              uint32_t red = 0xd70000;
+        uint32_t green = 0x009900;
+        uint32_t blue = 0x000021;
+        //not transparent
+        uint32_t alpha = 0xff000000;
+        uint32_t color = alpha + red + green + blue;
+        pixels[x + (y * surface_width)] = color;
+    }
+  }
+
+  wl_surface_attach(surface, shm_buffer, 0, 0);
+
+  wp_viewport_set_destination(viewport, surface_width, surface_height);
+
+  frame_callback = wl_surface_frame(surface);
+  wl_callback_add_listener(frame_callback, &frame_callback_listener, pixels);
+  wl_surface_damage(surface, 0, 0, INT32_MAX, INT32_MAX);
+  wl_surface_commit(surface);
+}
 
 static void repaint_output(struct wl_output *output) {
   int64_t delta = now_ms() - start_ms;
@@ -276,12 +318,15 @@ static void repaint_output(struct wl_output *output) {
 
   //uint32_t alpha = progress * UINT32_MAX ;
 //  struct wl_buffer *buffer = wp_single_pixel_buffer_manager_v1_create_u32_rgba_buffer(single_pixel_buffer_manager, 0, 0, 0, alpha);
+  #if 0
   wl_surface_attach(surface, shm_buffer, 0, 0);
 
   wp_viewport_set_destination(viewport, surface_width, surface_height);
   if (frame_callback != NULL) {
     wl_callback_destroy(frame_callback);
   }
+
+#endif
 
   frame_callback = wl_surface_frame(surface);
   wl_callback_add_listener(frame_callback, &frame_callback_listener, NULL);
@@ -377,7 +422,7 @@ int main(int argc, char *argv[])
     zwlr_layer_surface_v1_set_exclusive_zone(layer_surface, -1);
     wl_surface_commit(surface);
 
-    delay_ms = 3000;
+    delay_ms = 1500;
     start_ms = now_ms();
 
     // Display loop.
