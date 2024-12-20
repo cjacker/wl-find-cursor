@@ -30,6 +30,7 @@ struct zwlr_virtual_pointer_v1 *virtual_pointer = NULL;
 struct wl_pointer *pointer = NULL;
 
 struct wl_output *output = NULL;
+
 struct wl_seat *seat = NULL;
 struct zwlr_layer_surface_v1 *layer_surface = NULL;
 struct wp_viewport *viewport = NULL;
@@ -229,15 +230,17 @@ static void global_registry_handler(void *data, struct wl_registry *registry,
     single_pixel_buffer_manager = wl_registry_bind(registry, id, &wp_single_pixel_buffer_manager_v1_interface, 1);
   } else if (strcmp(interface, zwlr_virtual_pointer_manager_v1_interface.name) == 0) {
     virtual_pointer_manager = wl_registry_bind(registry, id, &zwlr_virtual_pointer_manager_v1_interface, 1);
-  } else if (strcmp(interface, wl_output_interface.name) == 0) {
-      output = wl_registry_bind(registry, id, &wl_output_interface, 4);
-      wl_output_add_listener(output, &wl_output_listener, output);
-  } else if (strcmp(interface, wl_seat_interface.name) == 0) {
+  } 
+  else if (strcmp(interface, wl_seat_interface.name) == 0) {
     seat = wl_registry_bind(registry, id, &wl_seat_interface, 1);
     wl_seat_add_listener(seat, &seat_listener, NULL);//FIXME.
   }
-   
 
+  // if output is NULL, it will default to focused output, that's what we want.
+  /*else if (strcmp(interface, wl_output_interface.name) == 0) {
+      wl_registry_bind(registry, id, &wl_output_interface, 4);
+      wl_output_add_listener(output, &wl_output_listener, output);
+  } */
 }
 
 static void global_registry_remove_handler(void *data,
@@ -374,7 +377,7 @@ int main(int argc, char *argv[])
     zwlr_layer_surface_v1_set_exclusive_zone(layer_surface, -1);
     wl_surface_commit(surface);
 
-    delay_ms = 2000;
+    delay_ms = 3000;
     start_ms = now_ms();
 
     // Display loop.
@@ -383,7 +386,6 @@ int main(int argc, char *argv[])
         break;
       }
     }
-
 
     wl_surface_destroy(surface);
 
