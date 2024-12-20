@@ -66,7 +66,7 @@ noop()
 void
 xdg_output_handle_name(void *data, struct wl_output *wl_output, const char *name)
 {
-	printf("%s\n", name);
+  printf("%s\n", name);
 }
 
 void
@@ -143,7 +143,7 @@ static void update_pixels(uint32_t *pixels) {
   //uint32_t alpha = progress * UINT32_MAX ;
  
   //don't use uint32_t here. since cursor_x - half can be negative. 
-	int half = (surface_height < surface_width ? surface_height : surface_width)/10;
+  int half = (surface_height < surface_width ? surface_height : surface_width)/10;
 
   half = half * progress;
 
