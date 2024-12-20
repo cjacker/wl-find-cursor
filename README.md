@@ -27,6 +27,12 @@ Run `wl-find-cursor` directly, it will draw an animation (a rectangle) at mouse 
 
 If you only want to obtain the mouse coordinates, use `wl-find-cursor -p` to skip the animation.
 
+You can also use it with other tools such as grim and slurp:
+
+```
+wl-find-cursor && grim -g "$(slurp -d)"
+```
+
 # How to enlarge the cursor size
 
 Usually I set cursor size to 64:
