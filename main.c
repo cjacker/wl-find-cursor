@@ -145,17 +145,21 @@ static void update_pixels(uint32_t *pixels) {
   int half = (surface_height < surface_width ? surface_height : surface_width)/10;
 
   half = half * progress;
+  
+  // since these not changed at runtime, 
+  // it's not neccesary put them in loop.
+  uint32_t red = RED;
+  uint32_t green = GREEN;
+  uint32_t blue = BLUE;
+  uint32_t alpha = ALPHA;
+  uint32_t color = alpha | red | green | blue;
 
   for (int y = 0; y < surface_height; y++) {
     if(y < cursor_y - half || y > cursor_y + half)
       continue;
     for (int x = 0; x < surface_width; x++) {
       if(x < cursor_x - half || x > cursor_x + half)
-        continue;                                                                                                              uint32_t red = RED;
-        uint32_t green = GREEN;
-        uint32_t blue = BLUE;
-        uint32_t alpha = ALPHA;
-        uint32_t color = alpha | red | green | blue;
+        continue;
         pixels[x + (y * surface_width)] = color;
     }
   }
