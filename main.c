@@ -121,7 +121,6 @@ allocate_shm_file(size_t size)
 }
 
 
-static void repaint_output(struct wl_output *output);
 static void update_pixels(uint32_t *pixels);
 
 static void frame_callback_handle_done(void *data, struct wl_callback *callback, uint32_t time) {
@@ -134,6 +133,43 @@ static void frame_callback_handle_done(void *data, struct wl_callback *callback,
 static const struct wl_callback_listener frame_callback_listener = {
   .done = frame_callback_handle_done,
 };
+
+static void update_pixels(uint32_t *pixels) {
+  int64_t delta = now_ms() - start_ms;
+  double progress = (double)delta / delay_ms;
+  if (progress >= 1) {
+    running = false;
+  }
+  //uint32_t alpha = progress * UINT32_MAX ;
+ 
+  //don't use uint32_t here. since cursor_x - half can be negative. 
+	int half = (surface_height < surface_width ? surface_height : surface_width)/10;
+
+  half = half * progress;
+
+  for (int y = 0; y < surface_height; y++) {
+    if(y < cursor_y - half || y > cursor_y + half)
+      continue;
+    for (int x = 0; x < surface_width; x++) {
+      if(x < cursor_x - half || x > cursor_x + half)
+        continue;                                                                                                              uint32_t red = 0xd70000;
+        uint32_t green = 0x009900;
+        uint32_t blue = 0x000021;
+        //not transparent
+        uint32_t alpha = 0xff000000;
+        uint32_t color = alpha + red + green + blue;
+        pixels[x + (y * surface_width)] = color;
+    }
+  }
+  
+  wl_surface_attach(surface, shm_buffer, 0, 0);
+  wp_viewport_set_destination(viewport, surface_width, surface_height);
+
+  frame_callback = wl_surface_frame(surface);
+  wl_callback_add_listener(frame_callback, &frame_callback_listener, pixels);
+  wl_surface_damage(surface, 0, 0, INT32_MAX, INT32_MAX);
+  wl_surface_commit(surface);
+}
 
 static void pointer_handle_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
 
@@ -157,26 +193,7 @@ static void pointer_handle_enter(void *data, struct wl_pointer *wl_pointer, uint
 
   uint32_t *pixels = (uint32_t *)&pool_data[offset];
 
-#if 0
-  uint32_t half = (surface_height < surface_width ? surface_height : surface_width)/10;
-
-  for (int y = 0; y < surface_height; y++) {
-    if(y < cursor_y - half || y > cursor_y + half)
-      continue;
-    for (int x = 0; x < surface_width; x++) {
-      if(x < cursor_x - half || x > cursor_x + half)
-        continue;                                                                                                              uint32_t red = 0xd70000;
-        uint32_t green = 0x009900;
-        uint32_t blue = 0x000021;
-        //not transparent
-        uint32_t alpha = 0xff000000;                                                                                           uint32_t color = alpha + red + green + blue;
-        pixels[x + (y * surface_width)] = color;
-    }
-  }
-#endif
-
   update_pixels(pixels);
-
 } 
 
 static void pointer_handle_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface) {
@@ -194,6 +211,7 @@ static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer, uin
 static void pointer_handle_axis(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value) {
   running = false;
 }
+
 static const struct wl_pointer_listener pointer_listener = {
   .enter = pointer_handle_enter,
   .leave = pointer_handle_leave,
@@ -208,7 +226,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, uint32
 
   if (caps & WL_SEAT_CAPABILITY_POINTER) {
     pointer = wl_seat_get_pointer(seat);
-    wl_pointer_add_listener(pointer, &pointer_listener, NULL); //FIXME
+    wl_pointer_add_listener(pointer, &pointer_listener, NULL); 
   }
   virtual_pointer = zwlr_virtual_pointer_manager_v1_create_virtual_pointer(virtual_pointer_manager, seat);
 }
@@ -217,9 +235,7 @@ static const struct wl_seat_listener seat_listener = {
   .capabilities = seat_handle_capabilities,
 };
 
-//==============
-// Global
-//==============
+
 static void global_registry_handler(void *data, struct wl_registry *registry,
         uint32_t id, const char *interface, uint32_t version)
 {
@@ -270,72 +286,6 @@ static const struct wl_registry_listener registry_listener = {
 };
 
 
-static void update_pixels(uint32_t *pixels) {
-  int64_t delta = now_ms() - start_ms;
-  double progress = (double)delta / delay_ms;
-  if (progress >= 1) {
-    running = false;
-  }
-  //uint32_t alpha = progress * UINT32_MAX ;
- 
-  //don't use uint32_t here. since cursor_x - half can be negative. 
-	int half = (surface_height < surface_width ? surface_height : surface_width)/10;
-
-  half = half * progress;
-
-  for (int y = 0; y < surface_height; y++) {
-    if(y < cursor_y - half || y > cursor_y + half)
-      continue;
-    for (int x = 0; x < surface_width; x++) {
-      if(x < cursor_x - half || x > cursor_x + half)
-        continue;                                                                                                              uint32_t red = 0xd70000;
-        uint32_t green = 0x009900;
-        uint32_t blue = 0x000021;
-        //not transparent
-        uint32_t alpha = 0xff000000;
-        uint32_t color = alpha + red + green + blue;
-        pixels[x + (y * surface_width)] = color;
-    }
-  }
-
-  wl_surface_attach(surface, shm_buffer, 0, 0);
-
-  wp_viewport_set_destination(viewport, surface_width, surface_height);
-
-  frame_callback = wl_surface_frame(surface);
-  wl_callback_add_listener(frame_callback, &frame_callback_listener, pixels);
-  wl_surface_damage(surface, 0, 0, INT32_MAX, INT32_MAX);
-  wl_surface_commit(surface);
-}
-
-static void repaint_output(struct wl_output *output) {
-  int64_t delta = now_ms() - start_ms;
-  double progress = (double)delta / delay_ms;
-  if (progress >= 1) {
-    running = false;
-  }
-
-
-  //uint32_t alpha = progress * UINT32_MAX ;
-//  struct wl_buffer *buffer = wp_single_pixel_buffer_manager_v1_create_u32_rgba_buffer(single_pixel_buffer_manager, 0, 0, 0, alpha);
-  #if 0
-  wl_surface_attach(surface, shm_buffer, 0, 0);
-
-  wp_viewport_set_destination(viewport, surface_width, surface_height);
-  if (frame_callback != NULL) {
-    wl_callback_destroy(frame_callback);
-  }
-
-#endif
-
-  frame_callback = wl_surface_frame(surface);
-  wl_callback_add_listener(frame_callback, &frame_callback_listener, NULL);
-  wl_surface_damage(surface, 0, 0, INT32_MAX, INT32_MAX);
-  wl_surface_commit(surface);
-
-  //wl_buffer_destroy(buffer);
-}
-
 
 static void layer_surface_handle_configure(void *data, struct zwlr_layer_surface_v1 *layer_surface, uint32_t serial, uint32_t width, uint32_t height) {
   surface_width = width;
@@ -351,10 +301,10 @@ static void layer_surface_handle_configure(void *data, struct zwlr_layer_surface
   wl_surface_commit(surface);
 
   wl_buffer_destroy(buffer);
+
+  //move cursor to activate pointer enter handler.
   zwlr_virtual_pointer_v1_motion(virtual_pointer, 0, 0, 0);
   zwlr_virtual_pointer_v1_frame(virtual_pointer);
-
-//  repaint_output(output);
 }
 
 static void layer_surface_handle_closed(void *data, struct zwlr_layer_surface_v1 *surface) {
