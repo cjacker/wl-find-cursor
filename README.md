@@ -23,7 +23,7 @@ After built, install `wl-find-cursor` to `PATH` (your local path or global path 
 
 # Usage
 
-Run `wl-find-cursor` directly, it will draw an animation (a rectangle) at mouse cursor and exit. The duration is 1 second by default. It should be enough to locate the mouse cursor. Moving mouse will quit the animation immediatly.
+Run `wl-find-cursor` directly, it will draw an animation (a growing square) at the position of mouse cursor and exit. The duration is 1 second by default. It should be enough to locate the mouse cursor. Moving mouse will quit the animation immediatly.
 
 If you only want to obtain the mouse coordinates, use `wl-find-cursor -p` to skip the animation.
 
@@ -56,7 +56,7 @@ Above settings should work well with all common applications include wayland/X/g
 
 **a config file?**
 
-It is a really simple and single-source tool, I prefer no config file. 
+It is really a simple and single-source tool, I prefer no config file. 
 
 If you want to change the color or change the animation duration, please change the codes directly, the RGBA and DURATION were defined at the top of source.
 
@@ -64,13 +64,10 @@ If you want to change the color or change the animation duration, please change 
 
 I drafted this in a few dozen minutes and it works.
 
-If you really hate global variables, go ahead and put them in some structures😊️
+If you really hate global variables, go ahead and put them in some structures and pass these structures everywhere.😄️
 
 **why square?**
 
 I use i3/sway for more than ten years, everything in i3/sway is flat rectangle.
 
-And I don't want to introduce cairo dependency and don't want to handle anti-alias issue manually, drawing square is toooo much simpler than circle.
-
-With cairo, you can draw something more complex easily.
-
+And I don't want to introduce cairo dependency， also don't want to handle anti-alias issue manually, drawing square is toooo much simpler than circle.
