@@ -28,7 +28,21 @@ If you only want to obtain the mouse coordinates, use `wl-find-cursor -p` to ski
 
 # And more
 
-This is a simple tool, I prefer no config files for it. Thus, if you want to change the color or change the animation duration, please change the codes directly, I defined RGBA and DURATION at the top of source.
+**config file?**
 
-And if you really hate global variables, go ahead and put them in structures😊️
+This is a really simple and single-source tool, I prefer no config files for it. 
+
+If you want to change the color or change the animation duration, please change the codes directly, I defined RGBA and DURATION at the top of source.
+
+**so ugly codes**
+
+I drafted this in just a few dozen minutes and it works.
+
+If you really hate global variables, go ahead and put them in structures😊️
+
+**why square?**
+
+I use i3/sway for more than ten years, everything is flat rectangle.
+
+And drawing sqaure is toooo much simpler than circle.
 
