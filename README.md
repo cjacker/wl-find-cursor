@@ -1,9 +1,11 @@
 # wl-find-cursor
-wl-find-cursor is a tool to highlight and print out mouse position in wayland.
+wl-find-cursor is a tool to highlight and print out global mouse position in wayland.
 
 Due to security concerns, it's difficult to obtain the global mouse position in Wayland. 
 This is generally not a problem. However, when we have multiple monitors and many editor windows open, 
 it is sometimes necessary to quickly locate the mouse position.
+
+This tool use layer-shell and virtual-pointer protocols to get global mouse position in wayland.
 
 ![screenshot-2024-12-20-21-07-18](https://github.com/user-attachments/assets/daac6cb8-b9e5-4a35-ab90-8367342c23fd)
 
