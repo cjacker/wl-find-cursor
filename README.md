@@ -56,5 +56,7 @@ If you really hate global variables, go ahead and put them in some structuresðŸ˜
 
 I use i3/sway for more than ten years, everything in i3/sway is flat rectangle.
 
-And drawing sqaure is toooo much simpler than circle.
+And I don't want to introduce cairo dependency, drawing sqaure is toooo much simpler than circle.
+
+With cairo, you can draw something more complex very easy.
 
