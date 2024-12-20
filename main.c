@@ -16,6 +16,16 @@
 #include "wlr-virtual-pointer-unstable-v1.h"
 #include "viewporter.h"
 
+// All what you can/want to change: 
+#define RED 0xd70000
+#define GREEN 0x009900
+#define BLUE 0x000021
+#define ALPHA 0xcf000000
+#define ANIMATION_DURATION_IN_SECOND 1
+
+
+bool no_animation = false;
+
 bool running = true;
 
 struct wl_display *display = NULL;
@@ -57,25 +67,7 @@ static int64_t now_ms(void) {
   return (int64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 }
 
-void
-noop()
-{
-  /* intentionally left blank */
-}
-
-void
-xdg_output_handle_name(void *data, struct wl_output *wl_output, const char *name)
-{
-  printf("%s\n", name);
-}
-
-void
-xdg_output_handle_done(void *data, struct wl_output *wl_output)
-{
-}
-
-static void
-randname(char *buf)
+static void randname(char *buf)
 {
   struct timespec ts;
   clock_gettime(CLOCK_REALTIME, &ts);
@@ -86,8 +78,7 @@ randname(char *buf)
   }
 }
 
-static int
-create_shm_file(void)
+static int create_shm_file(void)
 {
   int retries = 100;
   do {
@@ -103,8 +94,7 @@ create_shm_file(void)
   return -1;
 }
 
-int
-allocate_shm_file(size_t size)
+int allocate_shm_file(size_t size)
 {
   int fd = create_shm_file();
   if (fd < 0)
@@ -152,11 +142,10 @@ static void update_pixels(uint32_t *pixels) {
       continue;
     for (int x = 0; x < surface_width; x++) {
       if(x < cursor_x - half || x > cursor_x + half)
-        continue;                                                                                                              uint32_t red = 0xd70000;
-        uint32_t green = 0x009900;
-        uint32_t blue = 0x000021;
-        //not transparent
-        uint32_t alpha = 0xff000000;
+        continue;                                                                                                              uint32_t red = RED;
+        uint32_t green = GREEN;
+        uint32_t blue = BLUE;
+        uint32_t alpha = ALPHA;
         uint32_t color = alpha + red + green + blue;
         pixels[x + (y * surface_width)] = color;
     }
@@ -178,6 +167,11 @@ static void pointer_handle_enter(void *data, struct wl_pointer *wl_pointer, uint
 
   printf("%d %d\n", cursor_x, cursor_y);
 
+  if(no_animation == true) {
+    running = false;
+    return;
+  }
+
   const int width = surface_width, height = surface_height;
   const int stride = width * 4;
   const int shm_pool_size = height * stride * 2;
@@ -196,19 +190,23 @@ static void pointer_handle_enter(void *data, struct wl_pointer *wl_pointer, uint
   update_pixels(pixels);
 } 
 
-static void pointer_handle_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface) {
+static void pointer_handle_leave(void *data, struct wl_pointer *wl_pointer, 
+    uint32_t serial, struct wl_surface *surface) {
   running = false;
 }
 
-static void pointer_handle_motion(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
+static void pointer_handle_motion(void *data, struct wl_pointer *wl_pointer, 
+    uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
   running = false;
 }
 
-static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
+static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer, 
+    uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
   running = false;
 }
 
-static void pointer_handle_axis(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value) {
+static void pointer_handle_axis(void *data, struct wl_pointer *wl_pointer, 
+    uint32_t time, uint32_t axis, wl_fixed_t value) {
   running = false;
 }
 
@@ -218,9 +216,7 @@ static const struct wl_pointer_listener pointer_listener = {
   .motion = pointer_handle_motion,
   .button = pointer_handle_button,
   .axis = pointer_handle_axis,
-
 };
-
 
 static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, uint32_t caps) {
 
@@ -235,20 +231,9 @@ static const struct wl_seat_listener seat_listener = {
   .capabilities = seat_handle_capabilities,
 };
 
-
-static void global_registry_handler(void *data, struct wl_registry *registry,
-        uint32_t id, const char *interface, uint32_t version)
+static void global_registry_handler(void *data, struct wl_registry *registry, 
+    uint32_t id, const char *interface, uint32_t version)
 {
-  const static struct wl_output_listener wl_output_listener = {
-    .geometry = noop,
-    .mode = noop,
-    .scale = noop,
-    .name = xdg_output_handle_name,
-    .description = noop,
-    .done = xdg_output_handle_done,
-  };
-
-  // printf("Got a registry event for <%s>, id: %d, version: %d.\n", interface, id, version);
   if (strcmp(interface, wl_shm_interface.name) == 0) {
     shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
   } else if (strcmp(interface, wl_compositor_interface.name) == 0) {
@@ -274,18 +259,16 @@ static void global_registry_handler(void *data, struct wl_registry *registry,
   } */
 }
 
-static void global_registry_remove_handler(void *data,
-        struct wl_registry *registry, uint32_t id)
+static void global_registry_remove_handler(void *data, struct wl_registry *registry, uint32_t id)
 {
-    //printf("Got a registry losing event for <%d>\n", id);
+  wl_pointer_destroy(pointer);
+  wl_seat_destroy(seat);
 }
 
 static const struct wl_registry_listener registry_listener = {
-    .global = global_registry_handler,
-    .global_remove = global_registry_remove_handler,
+  .global = global_registry_handler,
+  .global_remove = global_registry_remove_handler,
 };
-
-
 
 static void layer_surface_handle_configure(void *data, struct zwlr_layer_surface_v1 *layer_surface, uint32_t serial, uint32_t width, uint32_t height) {
   surface_width = width;
@@ -307,8 +290,13 @@ static void layer_surface_handle_configure(void *data, struct zwlr_layer_surface
   zwlr_virtual_pointer_v1_frame(virtual_pointer);
 }
 
-static void layer_surface_handle_closed(void *data, struct zwlr_layer_surface_v1 *surface) {
-//
+static void layer_surface_handle_closed(void *data, struct zwlr_layer_surface_v1 *layer_surface) {
+  if (frame_callback != NULL) {
+    wl_callback_destroy(frame_callback);
+  }
+  wp_viewport_destroy(viewport);
+  zwlr_layer_surface_v1_destroy(layer_surface);
+  wl_surface_destroy(surface);
 }
 
 static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
@@ -319,71 +307,92 @@ static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
 
 int main(int argc, char *argv[])
 {
-    (void)argc;
-    (void)argv;
+  if(argc >= 2 && !strcmp(argv[1], "-p"))
+    no_animation = true;
 
-    display = wl_display_connect(NULL);
-    if (display == NULL) {
-        exit(1);
+  if(argc >= 2 && !strcmp(argv[1], "-h")) {
+    printf("wl-find-cursor: highlight and report cursor position in wayland.\n");
+    printf("Options:\n");
+    printf("  -p : skip animation, print out mouse coordinate in 'x y' format and exit\n");
+    exit(0);
+  }
+
+  display = wl_display_connect(NULL);
+  if (display == NULL) {
+      exit(1);
+  }
+
+  registry = wl_display_get_registry(display);
+  wl_registry_add_listener(registry, &registry_listener, NULL);
+  
+  wl_display_dispatch(display);
+
+  wl_display_roundtrip(display);
+  wl_display_roundtrip(display);
+  
+
+  struct {
+    const char *name;
+    bool found;
+  } required_globals[] = {
+    { "wl_compositor", compositor != NULL },
+    { "wl_shm", shm != NULL },
+    { "zwlr_layer_shell_v1", layer_shell != NULL },
+    { "wp_viewporter", viewporter != NULL },
+    { "wp_single_pixel_buffer_manager_v1", single_pixel_buffer_manager != NULL },
+    { "zwlr_virtual_pointer_manager_v1", virtual_pointer_manager != NULL },
+  };
+  for (size_t i = 0; i < sizeof(required_globals) / sizeof(required_globals[0]); i++) {
+    if (!required_globals[i].found) {
+      fprintf(stderr, "missing %s global\n", required_globals[i].name);
+      return 1;
     }
+  }
 
-    registry = wl_display_get_registry(display);
-    wl_registry_add_listener(registry, &registry_listener, NULL);
-    
-    wl_display_dispatch(display);
+  surface = wl_compositor_create_surface(compositor);
+  if (surface == NULL) {
+      exit(1);
+  }
 
-    wl_display_roundtrip(display);
-    wl_display_roundtrip(display);
-    
+  layer_surface = zwlr_layer_shell_v1_get_layer_surface(layer_shell, surface, output, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY, "find-cursor");
+  zwlr_layer_surface_v1_add_listener(layer_surface, &layer_surface_listener, NULL); //FIXME.
 
-    struct {
-      const char *name;
-      bool found;
-    } required_globals[] = {
-      { "wl_compositor", compositor != NULL },
-      { "wl_shm", shm != NULL },
-      { "zwlr_layer_shell_v1", layer_shell != NULL },
-      { "wp_viewporter", viewporter != NULL },
-      { "wp_single_pixel_buffer_manager_v1", single_pixel_buffer_manager != NULL },
-      { "zwlr_virtual_pointer_manager_v1", virtual_pointer_manager != NULL },
-    };
-    for (size_t i = 0; i < sizeof(required_globals) / sizeof(required_globals[0]); i++) {
-      if (!required_globals[i].found) {
-        fprintf(stderr, "missing %s global\n", required_globals[i].name);
-        return 1;
-      }
+  viewport = wp_viewporter_get_viewport(viewporter, surface);
+  zwlr_layer_surface_v1_set_anchor(layer_surface,
+    ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP |
+    ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT |
+    ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT |
+    ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM);
+  zwlr_layer_surface_v1_set_keyboard_interactivity(layer_surface, false);
+  zwlr_layer_surface_v1_set_exclusive_zone(layer_surface, -1);
+  wl_surface_commit(surface);
+
+  delay_ms = ANIMATION_DURATION_IN_SECOND * 1000;
+  start_ms = now_ms();
+
+  // Display loop.
+  while (running) {
+    if (wl_display_dispatch(display) < 0) {
+      break;
     }
+  }
+  
+  if (frame_callback != NULL) {
+      wl_callback_destroy(frame_callback);
+  }
+  wp_viewport_destroy(viewport);
+  zwlr_layer_surface_v1_destroy(layer_surface);
+  wl_surface_destroy(surface);
+  
+  wl_pointer_destroy(pointer);
+  wl_seat_destroy(seat);
 
-    surface = wl_compositor_create_surface(compositor);
-    if (surface == NULL) {
-        exit(1);
-    }
+	wl_compositor_destroy(compositor);
+  zwlr_layer_shell_v1_destroy(layer_shell);
+  wp_viewporter_destroy(viewporter);
+  wp_single_pixel_buffer_manager_v1_destroy(single_pixel_buffer_manager);
+  wl_registry_destroy(registry);
+  wl_display_disconnect(display);
 
-    layer_surface = zwlr_layer_shell_v1_get_layer_surface(layer_shell, surface, output, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY, "find-cursor");
-    zwlr_layer_surface_v1_add_listener(layer_surface, &layer_surface_listener, NULL); //FIXME.
-
-    viewport = wp_viewporter_get_viewport(viewporter, surface);
-    zwlr_layer_surface_v1_set_anchor(layer_surface,
-      ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP |
-      ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT |
-      ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT |
-      ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM);
-    zwlr_layer_surface_v1_set_keyboard_interactivity(layer_surface, false);
-    zwlr_layer_surface_v1_set_exclusive_zone(layer_surface, -1);
-    wl_surface_commit(surface);
-
-    delay_ms = 1500;
-    start_ms = now_ms();
-
-    // Display loop.
-    while (running) {
-      if (wl_display_dispatch(display) < 0) {
-        break;
-      }
-    }
-
-    wl_surface_destroy(surface);
-
-    wl_display_disconnect(display);
-    return 0;
+  return 0;
 }
