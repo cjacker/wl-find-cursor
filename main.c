@@ -17,7 +17,7 @@
 #include "viewporter.h"
 
 // All what you may want to change: 
-// color = ALPHA + RED + GREEN + BLUE
+// color = ALPHA | RED | GREEN | BLUE
 #define ALPHA (0xcf << 24)
 #define RED (0xd7 << 16)
 #define GREEN (0x99 << 8)
@@ -155,7 +155,7 @@ static void update_pixels(uint32_t *pixels) {
         uint32_t green = GREEN;
         uint32_t blue = BLUE;
         uint32_t alpha = ALPHA;
-        uint32_t color = alpha + red + green + blue;
+        uint32_t color = alpha | red | green | blue;
         pixels[x + (y * surface_width)] = color;
     }
   }
