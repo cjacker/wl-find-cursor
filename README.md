@@ -27,6 +27,12 @@ Run `wl-find-cursor` directly, it will draw an animation (a rectangle) at mouse 
 
 If you only want to obtain the mouse coordinates, use `wl-find-cursor -p` to skip the animation.
 
+Usually you should bind it with a hot key such as `Super+m`, for example, for sway:
+
+```
+bindsym $mod+m exec wl-find-cursor
+```
+
 You can also use it with other tools such as grim and slurp:
 
 ```
@@ -35,22 +41,24 @@ wl-find-cursor && grim -g "$(slurp -d)"
 
 # How to enlarge the cursor size
 
-Usually I set cursor size to 64:
+A large cursor will make thing easier, usually I set cursor size to 64:
+
 ```
 gsettings set org.gnome.desktop.interface cursor-size 64
 swaymsg seat seat0 xcursor_theme "$(gsettings get org.gnome.desktop.interface cursor-theme)" 64
 ```
+
 And append `Xcursor.size: 64` to `~/.Xresources`.
 
-Above settings should work well with all applications include wayland/X/gtk and qt.
+Above settings should work well with all common applications include wayland/X/gtk and qt.
 
 # And more
 
-**config file?**
+**a config file?**
 
-This is a really simple and single-source tool, I prefer no config files for it. 
+It is a really simple and single-source tool, I prefer no config file. 
 
-If you want to change the color or change the animation duration, please change the codes directly, I defined RGBA and DURATION at the top of source.
+If you want to change the color or change the animation duration, please change the codes directly, the RGBA and DURATION were defined at the top of source.
 
 **ugly codes**
 
@@ -62,7 +70,7 @@ If you really hate global variables, go ahead and put them in some structuresðŸ˜
 
 I use i3/sway for more than ten years, everything in i3/sway is flat rectangle.
 
-And I don't want to introduce cairo dependency, drawing sqaure is toooo much simpler than circle.
+And I don't want to introduce cairo dependency and don't want to handle anti-alias issue manually, drawing square is toooo much simpler than circle.
 
 With cairo, you can draw something more complex very easy.
 
