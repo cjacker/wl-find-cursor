@@ -5,6 +5,8 @@ Due to security concerns, it's difficult to obtain the global mouse position in 
 This is generally not a problem. However, when we have multiple monitors and many editor windows open, 
 it is sometimes necessary to quickly locate the mouse position.
 
+![screenshot-2024-12-20-21-07-18](https://github.com/user-attachments/assets/daac6cb8-b9e5-4a35-ab90-8367342c23fd)
+
 
 # Build and Installation
 ```
