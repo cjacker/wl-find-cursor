@@ -185,6 +185,8 @@ static void pointer_handle_enter(void *data, struct wl_pointer *wl_pointer, uint
 
   shm_buffer = wl_shm_pool_create_buffer(pool, offset, width, height, stride, WL_SHM_FORMAT_ARGB8888);
 
+  wl_shm_pool_destroy(pool);
+
   uint32_t *pixels = (uint32_t *)&pool_data[offset];
 
   update_pixels(pixels);
