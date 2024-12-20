@@ -11,19 +11,19 @@ This tool use layer-shell and virtual-pointer protocols to get global mouse posi
 
 
 # Build and Installation
+
+Before building, you may need to install `wayland-devel` or `libwayland-dev` pkgs first, it's depend on which distribution you use.
+
 ```
 git clone https://github.com/cjacker/wl-find-cursor
 make
 ```
 
-You may need to install wayland-devel or wayland-dev pkgs, it's depend on which distribution you use.
-
-And after built, install `wl-find-cursor` to PATH (your local path or global path such as /usr/bin).
-
+After built, install `wl-find-cursor` to `PATH` (your local path or global path such as /usr/bin, /usr/local/bin).
 
 # Usage
 
-Run `wl-find-cursor` directly, it will draw an animation (a rectangle) surround mouse cursor, the duration is 1 second,it should be enough to locate the mouse cursor, and move mouse will quit the animation immediatly.
+Run `wl-find-cursor` directly, it will draw an animation (a rectangle) at mouse cursor and exit. The duration is 1 second by default. It should be enough to locate the mouse cursor. Moving mouse will quit the animation immediatly.
 
 If you only want to obtain the mouse coordinates, use `wl-find-cursor -p` to skip the animation.
 
@@ -46,15 +46,15 @@ This is a really simple and single-source tool, I prefer no config files for it.
 
 If you want to change the color or change the animation duration, please change the codes directly, I defined RGBA and DURATION at the top of source.
 
-**so ugly codes**
+**ugly codes**
 
-I drafted this in just a few dozen minutes and it works.
+I drafted this in a few dozen minutes and it works.
 
-If you really hate global variables, go ahead and put them in structures😊️
+If you really hate global variables, go ahead and put them in some structures😊️
 
 **why square?**
 
-I use i3/sway for more than ten years, everything is flat rectangle.
+I use i3/sway for more than ten years, everything in i3/sway is flat rectangle.
 
 And drawing sqaure is toooo much simpler than circle.
 
