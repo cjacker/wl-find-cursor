@@ -12,14 +12,14 @@ This tool use layer-shell and virtual-pointer protocols to highlight and print o
 
 # Build and Installation
 
-Before building, you may need to install `wayland-devel` or `libwayland-dev` pkgs first, it's depend on which distribution you use.
+Before building, you may need to install `wayland-devel` or `libwayland-dev` pkgs first, it depends on the distribution you use.
 
 ```
 git clone https://github.com/cjacker/wl-find-cursor
 make
 ```
 
-After built, install `wl-find-cursor` to `PATH` (your local path or global path such as /usr/bin, /usr/local/bin).
+After built, install `wl-find-cursor` to `PATH` (local path or global path such as /usr/bin, /usr/local/bin).
 
 # Usage
 
