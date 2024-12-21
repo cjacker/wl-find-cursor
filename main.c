@@ -339,12 +339,11 @@ int main(int argc, char *argv[])
 
   registry = wl_display_get_registry(display);
   wl_registry_add_listener(registry, &registry_listener, NULL);
-  
+
   wl_display_dispatch(display);
 
   wl_display_roundtrip(display);
   wl_display_roundtrip(display);
-  
 
   struct {
     const char *name;
@@ -391,18 +390,18 @@ int main(int argc, char *argv[])
       break;
     }
   }
-  
+
   if (frame_callback != NULL) {
       wl_callback_destroy(frame_callback);
   }
   wp_viewport_destroy(viewport);
   zwlr_layer_surface_v1_destroy(layer_surface);
   wl_surface_destroy(surface);
-  
+
   wl_pointer_destroy(pointer);
   wl_seat_destroy(seat);
 
-	wl_compositor_destroy(compositor);
+  wl_compositor_destroy(compositor);
   zwlr_layer_shell_v1_destroy(layer_shell);
   wp_viewporter_destroy(viewporter);
   wp_single_pixel_buffer_manager_v1_destroy(single_pixel_buffer_manager);
