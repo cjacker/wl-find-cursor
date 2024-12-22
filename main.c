@@ -9,6 +9,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include <wayland-client-protocol.h>
 #include <wayland-client.h>
 
 #include "single-pixel-buffer-v1.h"
@@ -160,7 +161,7 @@ static void update_pixels(uint32_t *pixels) {
     for (int x = 0; x < surface_width; x++) {
       if(x < cursor_x - half || x > cursor_x + half)
         continue;
-        pixels[x + (y * surface_width)] = color;
+      pixels[x + (y * surface_width)] = color;
     }
   }
 
