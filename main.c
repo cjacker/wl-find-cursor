@@ -16,7 +16,7 @@
 #include "wlr-virtual-pointer-unstable-v1.h"
 #include "viewporter.h"
 
-// All what you may want to change: 
+// All what you may want to change:
 // color = ALPHA | RED | GREEN | BLUE
 #define ALPHA (0xcf << 24)
 #define RED (0xd7 << 16)
@@ -140,13 +140,13 @@ static void update_pixels(uint32_t *pixels) {
     running = false;
   }
   //uint32_t alpha = progress * UINT32_MAX ;
- 
-  //don't use uint32_t here. since cursor_x - half can be negative. 
+
+  //don't use uint32_t here. since cursor_x - half can be negative.
   int half = (surface_height < surface_width ? surface_height : surface_width)/10;
 
   half = half * progress;
-  
-  // since these not changed at runtime, 
+
+  // since these not changed at runtime,
   // it's not neccesary put them in loop.
   uint32_t red = RED;
   uint32_t green = GREEN;
@@ -163,7 +163,7 @@ static void update_pixels(uint32_t *pixels) {
         pixels[x + (y * surface_width)] = color;
     }
   }
-  
+
   wl_surface_attach(surface, shm_buffer, 0, 0);
   wp_viewport_set_destination(viewport, surface_width, surface_height);
 
@@ -188,7 +188,7 @@ static void pointer_handle_enter(void *data, struct wl_pointer *wl_pointer, uint
   const int width = surface_width, height = surface_height;
   const int stride = width * 4;
   const int shm_pool_size = height * stride * 2;
-  
+
   int fd = allocate_shm_file(shm_pool_size);
   uint8_t *pool_data = mmap(NULL, shm_pool_size,
       PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
@@ -203,24 +203,24 @@ static void pointer_handle_enter(void *data, struct wl_pointer *wl_pointer, uint
   uint32_t *pixels = (uint32_t *)&pool_data[offset];
 
   update_pixels(pixels);
-} 
+}
 
-static void pointer_handle_leave(void *data, struct wl_pointer *wl_pointer, 
+static void pointer_handle_leave(void *data, struct wl_pointer *wl_pointer,
     uint32_t serial, struct wl_surface *surface) {
   running = false;
 }
 
-static void pointer_handle_motion(void *data, struct wl_pointer *wl_pointer, 
+static void pointer_handle_motion(void *data, struct wl_pointer *wl_pointer,
     uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
   running = false;
 }
 
-static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer, 
+static void pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
     uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
   running = false;
 }
 
-static void pointer_handle_axis(void *data, struct wl_pointer *wl_pointer, 
+static void pointer_handle_axis(void *data, struct wl_pointer *wl_pointer,
     uint32_t time, uint32_t axis, wl_fixed_t value) {
   running = false;
 }
@@ -237,7 +237,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, uint32
 
   if (caps & WL_SEAT_CAPABILITY_POINTER) {
     pointer = wl_seat_get_pointer(seat);
-    wl_pointer_add_listener(pointer, &pointer_listener, NULL); 
+    wl_pointer_add_listener(pointer, &pointer_listener, NULL);
   }
   virtual_pointer = zwlr_virtual_pointer_manager_v1_create_virtual_pointer(virtual_pointer_manager, seat);
 }
@@ -246,7 +246,7 @@ static const struct wl_seat_listener seat_listener = {
   .capabilities = seat_handle_capabilities,
 };
 
-static void global_registry_handler(void *data, struct wl_registry *registry, 
+static void global_registry_handler(void *data, struct wl_registry *registry,
     uint32_t id, const char *interface, uint32_t version)
 {
   if (strcmp(interface, wl_shm_interface.name) == 0) {
@@ -261,7 +261,7 @@ static void global_registry_handler(void *data, struct wl_registry *registry,
     single_pixel_buffer_manager = wl_registry_bind(registry, id, &wp_single_pixel_buffer_manager_v1_interface, 1);
   } else if (strcmp(interface, zwlr_virtual_pointer_manager_v1_interface.name) == 0) {
     virtual_pointer_manager = wl_registry_bind(registry, id, &zwlr_virtual_pointer_manager_v1_interface, 1);
-  } 
+  }
   else if (strcmp(interface, wl_seat_interface.name) == 0) {
     seat = wl_registry_bind(registry, id, &wl_seat_interface, 1);
     wl_seat_add_listener(seat, &seat_listener, NULL);//FIXME.
@@ -290,7 +290,7 @@ static void layer_surface_handle_configure(void *data, struct zwlr_layer_surface
   surface_height = height;
 
   zwlr_layer_surface_v1_ack_configure(layer_surface, serial);
-  
+
   struct wl_buffer *buffer = wp_single_pixel_buffer_manager_v1_create_u32_rgba_buffer(single_pixel_buffer_manager, 0, 0, 0, 0);
   wl_surface_attach(surface, buffer, 0, 0);
 
