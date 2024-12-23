@@ -1,5 +1,6 @@
 # wl-find-cursor
-wl-find-cursor is a tool to highlight and print out global mouse position in wayland.
+
+wl-find-cursor is a tool to highlight and print out global mouse position in wayland, especially for compositors based on wlroots.
 
 Due to security concerns, it's difficult to obtain the global mouse position in Wayland, that's to say, there is no `xeyes` for wayland.
 This is generally not a problem. However, when we have multiple monitors and many editor windows open, 
@@ -9,10 +10,11 @@ This tool use layer-shell and virtual-pointer protocols to highlight and print o
 
 ![screenshot-2024-12-20-21-07-18](https://github.com/user-attachments/assets/daac6cb8-b9e5-4a35-ab90-8367342c23fd)
 
+**KDE/GNOME and weston didn't implement wayland virtual-pointer protocol, these compositors can not be supported by wl-find-cursor currently**
 
 # Build and Installation
 
-Before building, you may need to install `wayland-devel` or `libwayland-dev` pkgs first, it depends on the distribution you use.
+Before building, you may need to install `wayland-devel` and `wayland-protocols-devel` pkgs first, it depends on the distribution you use.
 
 ```
 git clone https://github.com/cjacker/wl-find-cursor
@@ -51,6 +53,23 @@ swaymsg seat seat0 xcursor_theme "$(gsettings get org.gnome.desktop.interface cu
 And append `Xcursor.size: 64` to `~/.Xresources`.
 
 Above settings should work well with all common applications include wayland/X/gtk and qt.
+
+# GNOME/KDE issue
+
+These compositors didn't implement wayland virtual-pointer procotol, but provide different way to find the cursor or get cursor position.
+
+for GNOME:
+
+```
+Settings > Accessibility > Pointing & Clicking > Locate Pointer
+```
+
+for KDE:
+
+Run kwin script as below:
+```
+print("Mouse position x=" + workspace.cursorPos.x + " y=" + workspace.cursorPos.y)
+```
 
 # And more
 
