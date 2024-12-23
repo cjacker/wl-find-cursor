@@ -8,7 +8,7 @@ it is sometimes necessary to quickly locate the mouse position.
 
 This tool use layer-shell and virtual-pointer protocols to highlight and print out global mouse position in wayland.
 
-**KDE/GNOME and weston didn't implement wayland virtual-pointer protocol, these compositors can not be supported by wl-find-cursor currently**
+**Since KDE/GNOME didn't implement the virtual pointer protocol, they cannot be supported by wl-find-cursor now. These compositors have their own methods to locate the mouse cursor or retrieve its position.**
 
 ![screenshot-2024-12-20-21-07-18](https://github.com/user-attachments/assets/daac6cb8-b9e5-4a35-ab90-8367342c23fd)
 
@@ -57,7 +57,7 @@ Above settings should work well with all common applications include wayland/X/g
 
 # GNOME/KDE issue
 
-These compositors didn't implement wayland virtual-pointer procotol, but provide different way to find the cursor or get cursor position.
+As mentioned above, these compositors didn't implement wayland virtual-pointer procotol, but provide different way to find the cursor or get cursor position.
 
 for GNOME:
 
