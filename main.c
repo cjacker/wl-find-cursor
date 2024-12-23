@@ -341,7 +341,6 @@ int main(int argc, char *argv[])
   registry = wl_display_get_registry(display);
   wl_registry_add_listener(registry, &registry_listener, NULL);
 
-  wl_display_dispatch(display);
 
   wl_display_roundtrip(display);
 
@@ -362,6 +361,8 @@ int main(int argc, char *argv[])
       return 1;
     }
   }
+  
+  wl_display_dispatch(display);
 
   surface = wl_compositor_create_surface(compositor);
   if (surface == NULL) {
