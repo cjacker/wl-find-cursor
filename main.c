@@ -261,7 +261,7 @@ static void global_registry_handler(void *data, struct wl_registry *registry,
   } else if (strcmp(interface, wp_single_pixel_buffer_manager_v1_interface.name) == 0) {
     single_pixel_buffer_manager = wl_registry_bind(registry, id, &wp_single_pixel_buffer_manager_v1_interface, 1);
   } else if (strcmp(interface, zwlr_virtual_pointer_manager_v1_interface.name) == 0) {
-    virtual_pointer_manager = wl_registry_bind(registry, id, &zwlr_virtual_pointer_manager_v1_interface, 1);
+    virtual_pointer_manager = wl_registry_bind(registry, id, &zwlr_virtual_pointer_manager_v1_interface, 2);
   }
   else if (strcmp(interface, wl_seat_interface.name) == 0) {
     seat = wl_registry_bind(registry, id, &wl_seat_interface, 1);
