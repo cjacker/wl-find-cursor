@@ -344,7 +344,6 @@ int main(int argc, char *argv[])
   wl_display_dispatch(display);
 
   wl_display_roundtrip(display);
-  wl_display_roundtrip(display);
 
   struct {
     const char *name;
