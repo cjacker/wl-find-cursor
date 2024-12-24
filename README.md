@@ -26,15 +26,17 @@ After built, install `wl-find-cursor` to `PATH` (local path or global path such 
 # Usage
 
 ```
-wl-find-cursor: highlight and report cursor position in wayland.
+wl-find-cursor - highlight and report cursor position in wayland.
+
 Options:
   -s <int>    : animation square size.
   -a <hex int>: alpha value of color.
   -r <hex int>: red value of color.
   -g <hex int>: green value of color.
   -b <hex int>: blue value of color.
-  -c <string> : cmd to emulate mouse event for compositor lack of virtual pointer support.
-  -p          : skip animation, print out mouse coordinate in 'x y' format and exit
+  -p          : skip animation.
+  -c <string> : command to emulate mouse move event.
+  -h          : show this message.
 ```
 
 Run `wl-find-cursor` directly, it will draw an animation (a growing square) at the position of mouse cursor and exit. The duration is 1 second by default and the square color is default to `0xcfd79921`. It should be enough to locate the mouse cursor. Moving mouse will quit the animation immediatly.

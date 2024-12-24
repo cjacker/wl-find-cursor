@@ -338,15 +338,16 @@ static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
 };
 
 void usage() {
-  printf("wl-find-cursor: highlight and report cursor position in wayland.\n");
+  printf("wl-find-cursor - highlight and report cursor position in wayland.\n\n");
   printf("Options:\n");
   printf("  -s <int>    : animation square size.\n");
   printf("  -a <hex int>: alpha value of color.\n");
   printf("  -r <hex int>: red value of color.\n");
   printf("  -g <hex int>: green value of color.\n");
   printf("  -b <hex int>: blue value of color.\n");
-  printf("  -c <string> : cmd to emulate mouse event for compositor lack of virtual pointer support.\n");
-  printf("  -p          : skip animation, print out mouse coordinate in 'x y' format and exit\n");
+  printf("  -p          : skip animation.\n");
+  printf("  -c <string> : command to emulate mouse move event.\n");
+  printf("  -h          : show this message.\n");
   exit(0);
 }
 int main(int argc, char *argv[])
