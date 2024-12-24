@@ -1,14 +1,14 @@
 # wl-find-cursor
 
-wl-find-cursor is a tool to highlight and print out global mouse position in wayland, especially for compositors based on wlroots.
+wl-find-cursor is a tool to highlight and print out global mouse position in wayland, especially for compositors based on wlroots, such as sway.
 
 Due to security concerns, it's difficult to obtain the global mouse position in Wayland, that's to say, there is no `xeyes` for wayland.
 This is generally not a problem. However, when we have multiple monitors and many editor windows open, 
 it is sometimes necessary to quickly locate the mouse position.
 
-This tool use layer-shell and virtual-pointer protocols to highlight and print out global mouse position in wayland.
+This tool use layer-shell and virtual-pointer protocols to highlight and print out global mouse position in wayland. If the compositor is Lack of virtual pointer supporting, it can be worked around, but layer shell is essential.
 
-**Since KDE/GNOME didn't implement the virtual pointer protocol, they cannot be supported by wl-find-cursor now. These compositors have their own methods to locate the mouse cursor or retrieve its position.**
+**Since GNOME rejected to implement layer shell and virtual pointer protocol several years ago, it can not be supported by wl-find-cursor.**
 
 ![screenshot-2024-12-20-21-07-18](https://github.com/user-attachments/assets/daac6cb8-b9e5-4a35-ab90-8367342c23fd)
 
@@ -26,6 +26,13 @@ After built, install `wl-find-cursor` to `PATH` (local path or global path such 
 
 # Usage
 
+```
+wl-find-cursor: highlight and report cursor position in wayland.
+Options:
+  -c : specify cmd to emulate mouse event for compositor lack of virtual pointer support.
+  -p : skip animation, print out mouse coordinate in 'x y' format and exit
+```
+
 Run `wl-find-cursor` directly, it will draw an animation (a growing square) at the position of mouse cursor and exit. The duration is 1 second by default. It should be enough to locate the mouse cursor. Moving mouse will quit the animation immediatly.
 
 If you only want to obtain the mouse coordinates, use `wl-find-cursor -p` to skip the animation.
@@ -41,6 +48,13 @@ You can also use it with other tools such as grim and slurp:
 ```
 wl-find-cursor && grim -g "$(slurp -d)"
 ```
+### for KDE user
+
+It seems kwin_wayland didn't implement virtual pointer protocol, but had layer shell support. I make a workaround for it, wl-find-cursor can accept a cmd to emulate mouse move event, for example, with 'ydotool':
+
+```
+wl-find-cursor -c "ydotool mousemove 0 1" -p
+```
 
 # How to enlarge the cursor size
 
@@ -54,23 +68,6 @@ swaymsg seat seat0 xcursor_theme "$(gsettings get org.gnome.desktop.interface cu
 And append `Xcursor.size: 64` to `~/.Xresources`.
 
 Above settings should work well with all common applications include wayland/X/gtk and qt.
-
-# GNOME/KDE issue
-
-As mentioned above, these compositors didn't implement wayland virtual-pointer procotol, but provide different way to find the cursor or get cursor position.
-
-for GNOME:
-
-```
-Settings > Accessibility > Pointing & Clicking > Locate Pointer
-```
-
-for KDE:
-
-Run kwin script as below:
-```
-print("Mouse position x=" + workspace.cursorPos.x + " y=" + workspace.cursorPos.y)
-```
 
 # And more
 

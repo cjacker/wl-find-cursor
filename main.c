@@ -17,6 +17,12 @@
 #include "wlr-virtual-pointer-unstable-v1.h"
 #include "viewporter.h"
 
+// for arguments
+#include "arg.h"
+char *argv0;
+
+char *emulate_cmd = NULL;
+
 // All what you may want to change:
 // color = ALPHA | RED | GREEN | BLUE
 #define ALPHA (0xcf << 24)
@@ -240,7 +246,10 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, uint32
     pointer = wl_seat_get_pointer(seat);
     wl_pointer_add_listener(pointer, &pointer_listener, NULL);
   }
-  virtual_pointer = zwlr_virtual_pointer_manager_v1_create_virtual_pointer(virtual_pointer_manager, seat);
+
+  if(virtual_pointer_manager != NULL) {
+    virtual_pointer = zwlr_virtual_pointer_manager_v1_create_virtual_pointer(virtual_pointer_manager, seat);
+  }
 }
 
 static const struct wl_seat_listener seat_listener = {
@@ -255,7 +264,7 @@ static void global_registry_handler(void *data, struct wl_registry *registry,
   } else if (strcmp(interface, wl_compositor_interface.name) == 0) {
     compositor = wl_registry_bind(registry, id, &wl_compositor_interface, 4);
   } else if (strcmp(interface, zwlr_layer_shell_v1_interface.name) == 0) {
-    layer_shell = wl_registry_bind(registry, id, &zwlr_layer_shell_v1_interface, 1);
+    layer_shell = wl_registry_bind(registry, id, &zwlr_layer_shell_v1_interface, 2);
   } else if (strcmp(interface, wp_viewporter_interface.name) == 0) {
     viewporter = wl_registry_bind(registry, id, &wp_viewporter_interface, 1);
   } else if (strcmp(interface, wp_single_pixel_buffer_manager_v1_interface.name) == 0) {
@@ -302,8 +311,13 @@ static void layer_surface_handle_configure(void *data, struct zwlr_layer_surface
   wl_buffer_destroy(buffer);
 
   //move cursor to activate pointer enter handler.
-  zwlr_virtual_pointer_v1_motion(virtual_pointer, 0, 0, 0);
-  zwlr_virtual_pointer_v1_frame(virtual_pointer);
+  if(virtual_pointer_manager != NULL) {
+    zwlr_virtual_pointer_v1_motion(virtual_pointer, 0, 0, 0);
+    zwlr_virtual_pointer_v1_frame(virtual_pointer);
+  } else {
+    // return value is unused, using 'system' is enough.
+    system(emulate_cmd);
+  }
 }
 
 static void layer_surface_handle_closed(void *data, struct zwlr_layer_surface_v1 *layer_surface) {
@@ -320,18 +334,29 @@ static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
   .closed = layer_surface_handle_closed,
 };
 
-
+void usage() {
+  printf("wl-find-cursor: highlight and report cursor position in wayland.\n");
+  printf("Options:\n");
+  printf("  -c : specify cmd to emulate mouse event for compositor lack of virtual pointer support.\n");
+  printf("  -p : skip animation, print out mouse coordinate in 'x y' format and exit\n");
+  exit(0);
+}
 int main(int argc, char *argv[])
 {
-  if(argc >= 2 && !strcmp(argv[1], "-p"))
+  ARGBEGIN {
+  case 'p':
     no_animation = true;
-
-  if(argc >= 2 && !strcmp(argv[1], "-h")) {
-    printf("wl-find-cursor: highlight and report cursor position in wayland.\n");
-    printf("Options:\n");
-    printf("  -p : skip animation, print out mouse coordinate in 'x y' format and exit\n");
+    break;
+  case 'c':
+    emulate_cmd = EARGF(usage());
+    break;
+  case 'h':
+    usage();
     exit(0);
+  default:
+    usage();
   }
+  ARGEND;
 
   display = wl_display_connect(NULL);
   if (display == NULL) {
@@ -343,6 +368,8 @@ int main(int argc, char *argv[])
 
 
   wl_display_roundtrip(display);
+
+  virtual_pointer_manager = NULL;
 
   struct {
     const char *name;
@@ -357,11 +384,24 @@ int main(int argc, char *argv[])
   };
   for (size_t i = 0; i < sizeof(required_globals) / sizeof(required_globals[0]); i++) {
     if (!required_globals[i].found) {
-      fprintf(stderr, "missing %s global\n", required_globals[i].name);
-      return 1;
+      if(!strcmp("zwlr_virtual_pointer_manager_v1", required_globals[i].name)) {
+        if (emulate_cmd != NULL) {
+          break;
+        } else {
+          fprintf(stderr, "The compositor lack of zwlr_virtual_pointer_manager_v1 support!\n");
+          fprintf(stderr, "Please specify a cmd by 'wl-find-cursor -c' to emulate mouse event.\n\n");
+          fprintf(stderr, "For example:\n");
+          fprintf(stderr, "wl-find-cursor -c \"swaymsg 'seat - cursor move 0 0'\"\n");
+          fprintf(stderr, "wl-find-cursor -c \"ydotool mousemove 0 1\"\n");
+          return 1;
+        }
+      } else {
+        fprintf(stderr, "The compositor lack %s support!\n", required_globals[i].name);
+        return 1;
+      }
     }
   }
-  
+
   wl_display_dispatch(display);
 
   surface = wl_compositor_create_surface(compositor);
