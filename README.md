@@ -41,9 +41,13 @@ Options:
 
 Run `wl-find-cursor` directly, it will draw an animation (a growing square) at the position of mouse cursor and exit. The duration is 1 second by default and the square color is default to `0xcfd79921`. It should be enough to locate the mouse cursor. Moving mouse will quit the animation immediatly.
 
-If you only want to obtain the mouse coordinates, use `wl-find-cursor -p` to skip the animation.
+To obtain the mouse coordinates only:
 
-If you need customize the animation duration, square size, square color, you can corresponding parameters, such as:
+```
+wl-find-cursor -p
+```
+
+To customize the animation duration, square size, square color:
 
 ```
 wl-find-cursor -a 0x88 -r 0xcc -g 0x24 -b 0x1d -s 400 -d 2
@@ -51,13 +55,13 @@ wl-find-cursor -a 0x88 -r 0xcc -g 0x24 -b 0x1d -s 400 -d 2
 
 It will show a semi-transparent red square with size 400, the duration is 2 second.
 
-Usually you should bind it with a hot key such as `Super+m`, for example, for sway:
+Usually you may bind it with a hot key such as `Super+m`, for example, for sway:
 
 ```
 bindsym $mod+m exec wl-find-cursor
 ```
 
-You can also use it with other tools such as grim and slurp:
+You can also use it with other tools to locate the cursor quickly such as grim and slurp:
 
 ```
 wl-find-cursor && grim -g "$(slurp -d)"
@@ -65,15 +69,15 @@ wl-find-cursor && grim -g "$(slurp -d)"
 
 ### for KDE user
 
-It seems kwin_wayland didn't implement virtual pointer protocol, but had layer shell support. I make a workaround for it, wl-find-cursor can accept a cmd to emulate mouse move event, for example, with 'ydotool':
+It seems kwin_wayland didn't implement virtual pointer protocol, but had layer shell support. I make a workaround for it, wl-find-cursor can accept a command to emulate mouse move event, for example, with 'ydotool':
 
 ```
 wl-find-cursor -c "ydotool mousemove 0 1" -p
 ```
 
-# How to enlarge the cursor size
+# Off topic: how to enlarge the cursor size
 
-A large cursor will make things easier, usually I set cursor size to 64:
+A large cursor will make things easier, usually I set cursor size to 64 in sway:
 
 ```
 gsettings set org.gnome.desktop.interface cursor-size 64
@@ -83,23 +87,3 @@ swaymsg seat seat0 xcursor_theme "$(gsettings get org.gnome.desktop.interface cu
 And append `Xcursor.size: 64` to `~/.Xresources`.
 
 Above settings should work well with all common applications include wayland/X/gtk and qt.
-
-# And more
-
-**a config file?**
-
-It is really a simple and single-source tool, I prefer no config file. 
-
-If you want to change the color or change the animation duration, please change the codes directly, the RGBA and DURATION were defined at the top of source.
-
-**ugly codes**
-
-I drafted this in a few dozen minutes and it works.
-
-If you really hate global variables, go ahead and put them in some structures and pass these structures everywhere.😄️
-
-**why square?**
-
-I use i3/sway for more than ten years, everything in i3/sway is flat rectangle.
-
-And I don't want to introduce cairo dependency， also don't want to handle anti-alias issue manually, drawing square is toooo much simpler than circle.
