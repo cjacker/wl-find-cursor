@@ -23,19 +23,16 @@ char *argv0;
 
 char *emulate_cmd = NULL;
 
-// All what you may want to change:
-// color = ALPHA | RED | GREEN | BLUE
-int alpha = 0xcf;
-int red = 0xd7;
-int green = 0x99;
-int blue = 0x21;
+// default color in 0xAARRGGBB format.
+uint32_t color = 0xcfd79921;
 
+// default animation duration, 1 second.
 int animation_duration_in_second = 1;
 
-// user defined square size
+// if user defined square size
 int size = 0;
 
-// control show animation or not.
+// control flag to show animation or not.
 bool no_animation = false;
 
 // false to exit
@@ -162,7 +159,7 @@ static void update_pixels(uint32_t *pixels) {
 
   // since these not changed at runtime,
   // it's not neccesary put them in loop.
-  uint32_t color = alpha << 24 | red << 16 | green << 8 | blue;
+  //uint32_t color = alpha << 24 | red << 16 | green << 8 | blue;
 
   for (int y = 0; y < surface_height; y++) {
     if(y < cursor_y - half_size || y > cursor_y + half_size)
@@ -340,30 +337,19 @@ static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
 void usage() {
   printf("wl-find-cursor - highlight and report cursor position in wayland.\n\n");
   printf("Options:\n");
+  printf("  -d <int>    : animation duration in second.\n");
   printf("  -s <int>    : animation square size.\n");
-  printf("  -a <hex int>: alpha value of color.\n");
-  printf("  -r <hex int>: red value of color.\n");
-  printf("  -g <hex int>: green value of color.\n");
-  printf("  -b <hex int>: blue value of color.\n");
+  printf("  -c <hex int>: animation square color in 0xAARRGGBB format.\n");
   printf("  -p          : skip animation.\n");
-  printf("  -c <string> : command to emulate mouse move event.\n");
+  printf("  -e <string> : command to emulate mouse move event.\n");
   printf("  -h          : show this message.\n");
   exit(0);
 }
 int main(int argc, char *argv[])
 {
   ARGBEGIN {
-  case 'a':
-    alpha = strtol(EARGF(usage()), NULL, 0);
-    break;
-  case 'r':
-    red = strtol(EARGF(usage()), NULL, 0);
-    break;
-  case 'g':
-    green = strtol(EARGF(usage()), NULL, 0);
-    break;
-  case 'b':
-    blue = strtol(EARGF(usage()), NULL, 0);
+  case 'c':
+    color = strtol(EARGF(usage()), NULL, 0);
     break;
   case 'd':
     animation_duration_in_second = strtol(EARGF(usage()), NULL, 0);
@@ -374,7 +360,7 @@ int main(int argc, char *argv[])
   case 'p':
     no_animation = true;
     break;
-  case 'c':
+  case 'e':
     emulate_cmd = EARGF(usage());
     break;
   case 'h':

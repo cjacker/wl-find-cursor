@@ -29,13 +29,11 @@ After built, install `wl-find-cursor` to `PATH` (local path or global path such 
 wl-find-cursor - highlight and report cursor position in wayland.
 
 Options:
+  -d <int>    : animation duration in second.
   -s <int>    : animation square size.
-  -a <hex int>: alpha value of color.
-  -r <hex int>: red value of color.
-  -g <hex int>: green value of color.
-  -b <hex int>: blue value of color.
+  -c <hex int>: animation square color in 0xAARRGGBB format.
   -p          : skip animation.
-  -c <string> : command to emulate mouse move event.
+  -e <string> : command to emulate mouse move event.
   -h          : show this message.
 ```
 
@@ -50,7 +48,7 @@ wl-find-cursor -p
 To customize the animation duration, square size, square color:
 
 ```
-wl-find-cursor -a 0x88 -r 0xcc -g 0x24 -b 0x1d -s 400 -d 2
+wl-find-cursor -c 0x88cc241d -s 400 -d 2
 ```
 
 It will show a semi-transparent red square with size 400, the duration is 2 second.
@@ -72,7 +70,7 @@ wl-find-cursor && grim -g "$(slurp -d)"
 It seems kwin_wayland didn't implement virtual pointer protocol, but had layer shell support. I make a workaround for it, wl-find-cursor can accept a command to emulate mouse move event, for example, with 'ydotool':
 
 ```
-wl-find-cursor -c "ydotool mousemove 0 1" -p
+wl-find-cursor -e "ydotool mousemove 0 1" -p
 ```
 
 # Off topic: how to enlarge the cursor size
