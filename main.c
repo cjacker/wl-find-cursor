@@ -25,12 +25,15 @@ char *emulate_cmd = NULL;
 
 // All what you may want to change:
 // color = ALPHA | RED | GREEN | BLUE
-#define ALPHA (0xcf << 24)
-#define RED (0xd7 << 16)
-#define GREEN (0x99 << 8)
-#define BLUE 0x21
+int alpha = 0xcf;
+int red = 0xd7;
+int green = 0x99;
+int blue = 0x21;
 
-#define ANIMATION_DURATION_IN_SECOND 1
+int animation_duration_in_second = 1;
+
+// user defined square size
+int size = 0;
 
 // control show animation or not.
 bool no_animation = false;
@@ -148,24 +151,24 @@ static void update_pixels(uint32_t *pixels) {
   }
   //uint32_t alpha = progress * UINT32_MAX ;
 
-  //don't use uint32_t here. since cursor_x - half can be negative.
-  int half = (surface_height < surface_width ? surface_height : surface_width)/10;
+  //don't use uint32_t here. since 'cursor_x - half_size' can be negative.
+  int half_size = (surface_height < surface_width ? surface_height : surface_width)/10;
 
-  half = half * progress;
+  //user defined square size
+  if(size != 0)
+      half_size = size >> 1;
+
+  half_size = half_size * progress;
 
   // since these not changed at runtime,
   // it's not neccesary put them in loop.
-  uint32_t red = RED;
-  uint32_t green = GREEN;
-  uint32_t blue = BLUE;
-  uint32_t alpha = ALPHA;
-  uint32_t color = alpha | red | green | blue;
+  uint32_t color = alpha << 24 | red << 16 | green << 8 | blue;
 
   for (int y = 0; y < surface_height; y++) {
-    if(y < cursor_y - half || y > cursor_y + half)
+    if(y < cursor_y - half_size || y > cursor_y + half_size)
       continue;
     for (int x = 0; x < surface_width; x++) {
-      if(x < cursor_x - half || x > cursor_x + half)
+      if(x < cursor_x - half_size || x > cursor_x + half_size)
         continue;
       pixels[x + (y * surface_width)] = color;
     }
@@ -337,13 +340,36 @@ static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
 void usage() {
   printf("wl-find-cursor: highlight and report cursor position in wayland.\n");
   printf("Options:\n");
-  printf("  -c : specify cmd to emulate mouse event for compositor lack of virtual pointer support.\n");
-  printf("  -p : skip animation, print out mouse coordinate in 'x y' format and exit\n");
+  printf("  -s <int>    : animation square size.\n");
+  printf("  -a <hex int>: alpha value of color.\n");
+  printf("  -r <hex int>: red value of color.\n");
+  printf("  -g <hex int>: green value of color.\n");
+  printf("  -b <hex int>: blue value of color.\n");
+  printf("  -c <string> : cmd to emulate mouse event for compositor lack of virtual pointer support.\n");
+  printf("  -p          : skip animation, print out mouse coordinate in 'x y' format and exit\n");
   exit(0);
 }
 int main(int argc, char *argv[])
 {
   ARGBEGIN {
+  case 'a':
+    alpha = strtol(EARGF(usage()), NULL, 0);
+    break;
+  case 'r':
+    red = strtol(EARGF(usage()), NULL, 0);
+    break;
+  case 'g':
+    green = strtol(EARGF(usage()), NULL, 0);
+    break;
+  case 'b':
+    blue = strtol(EARGF(usage()), NULL, 0);
+    break;
+  case 'd':
+    animation_duration_in_second = strtol(EARGF(usage()), NULL, 0);
+    break;
+  case 's':
+    size = strtol(EARGF(usage()), NULL, 0);
+    break;
   case 'p':
     no_animation = true;
     break;
@@ -368,8 +394,6 @@ int main(int argc, char *argv[])
 
 
   wl_display_roundtrip(display);
-
-  virtual_pointer_manager = NULL;
 
   struct {
     const char *name;
@@ -422,7 +446,7 @@ int main(int argc, char *argv[])
   zwlr_layer_surface_v1_set_exclusive_zone(layer_surface, -1);
   wl_surface_commit(surface);
 
-  delay_ms = ANIMATION_DURATION_IN_SECOND * 1000;
+  delay_ms = animation_duration_in_second * 1000;
   start_ms = now_ms();
 
   // Display loop.

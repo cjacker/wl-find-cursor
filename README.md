@@ -29,13 +29,26 @@ After built, install `wl-find-cursor` to `PATH` (local path or global path such 
 ```
 wl-find-cursor: highlight and report cursor position in wayland.
 Options:
-  -c : specify cmd to emulate mouse event for compositor lack of virtual pointer support.
-  -p : skip animation, print out mouse coordinate in 'x y' format and exit
+  -s <int>    : animation square size.
+  -a <hex int>: alpha value of color.
+  -r <hex int>: red value of color.
+  -g <hex int>: green value of color.
+  -b <hex int>: blue value of color.
+  -c <string> : cmd to emulate mouse event for compositor lack of virtual pointer support.
+  -p          : skip animation, print out mouse coordinate in 'x y' format and exit
 ```
 
-Run `wl-find-cursor` directly, it will draw an animation (a growing square) at the position of mouse cursor and exit. The duration is 1 second by default. It should be enough to locate the mouse cursor. Moving mouse will quit the animation immediatly.
+Run `wl-find-cursor` directly, it will draw an animation (a growing square) at the position of mouse cursor and exit. The duration is 1 second by default and the square color is default to `0xcfd79921`. It should be enough to locate the mouse cursor. Moving mouse will quit the animation immediatly.
 
 If you only want to obtain the mouse coordinates, use `wl-find-cursor -p` to skip the animation.
+
+If you need customize the animation duration, square size, square color, you can corresponding parameters, such as:
+
+```
+wl-find-cursor -a 0x88 -r 0xcc -g 0x24 -b 0x1d -s 400 -d 2
+```
+
+It will show a semi-transparent red square with size 400, the duration is 2 second.
 
 Usually you should bind it with a hot key such as `Super+m`, for example, for sway:
 
@@ -48,6 +61,7 @@ You can also use it with other tools such as grim and slurp:
 ```
 wl-find-cursor && grim -g "$(slurp -d)"
 ```
+
 ### for KDE user
 
 It seems kwin_wayland didn't implement virtual pointer protocol, but had layer shell support. I make a workaround for it, wl-find-cursor can accept a cmd to emulate mouse move event, for example, with 'ydotool':
