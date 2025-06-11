@@ -27,7 +27,7 @@ char *emulate_cmd = NULL;
 uint32_t color = 0xcfd79921;
 
 // default animation duration, 1 second.
-int animation_duration_in_second = 1;
+int animation_duration_in_ms = 1000;  // default 1000ms (1 second)
 
 // if user defined square size
 int size = 0;
@@ -337,7 +337,7 @@ static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
 void usage() {
   printf("wl-find-cursor - highlight and report cursor position in wayland.\n\n");
   printf("Options:\n");
-  printf("  -d <int>    : animation duration in second.\n");
+  printf("  -d <int>    : animation duration in milliseconds.\n");
   printf("  -s <int>    : animation square size.\n");
   printf("  -c <hex int>: animation square color in 0xAARRGGBB format.\n");
   printf("  -p          : skip animation.\n");
@@ -352,7 +352,7 @@ int main(int argc, char *argv[])
     color = strtol(EARGF(usage()), NULL, 0);
     break;
   case 'd':
-    animation_duration_in_second = strtol(EARGF(usage()), NULL, 0);
+    animation_duration_in_ms = strtol(EARGF(usage()), NULL, 0);
     break;
   case 's':
     size = strtol(EARGF(usage()), NULL, 0);
@@ -433,7 +433,7 @@ int main(int argc, char *argv[])
   zwlr_layer_surface_v1_set_exclusive_zone(layer_surface, -1);
   wl_surface_commit(surface);
 
-  delay_ms = animation_duration_in_second * 1000;
+  delay_ms = animation_duration_in_ms;
   start_ms = now_ms();
 
   // Display loop.
