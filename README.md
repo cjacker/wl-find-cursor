@@ -10,7 +10,7 @@ This tool use layer-shell and virtual-pointer protocols to highlight and print o
 
 **Since GNOME rejected to implement layer shell and virtual pointer protocol several years ago, it can not be supported by wl-find-cursor.**
 
-![screenshot-2024-12-20-21-07-18](https://github.com/user-attachments/assets/daac6cb8-b9e5-4a35-ab90-8367342c23fd)
+![screenshot](screenshot.png)
 
 # Build and Installation
 
