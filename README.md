@@ -30,14 +30,14 @@ wl-find-cursor - highlight and report cursor position in wayland.
 
 Options:
   -d <int>    : animation duration in second.
-  -s <int>    : animation square size.
-  -c <hex int>: animation square color in 0xAARRGGBB format.
+  -s <int>    : animation circle size.
+  -c <hex int>: animation circle color in 0xAARRGGBB format.
   -p          : skip animation.
   -e <string> : command to emulate mouse move event.
   -h          : show this message.
 ```
 
-Run `wl-find-cursor` directly, it will draw an animation (a growing square) at the position of mouse cursor and exit. The duration is 1 second by default and the square color is default to `0xcfd79921`. It should be enough to locate the mouse cursor. Moving mouse will quit the animation immediatly.
+Run `wl-find-cursor` directly, it will draw an animation (a growing circle) at the position of mouse cursor and exit. The duration is 1 second by default and the circle color is default to `0xcfd79921`. It should be enough to locate the mouse cursor. Moving mouse will quit the animation immediatly.
 
 To obtain the mouse coordinates only:
 
@@ -45,13 +45,13 @@ To obtain the mouse coordinates only:
 wl-find-cursor -p
 ```
 
-To customize the animation duration, square size, square color:
+To customize the animation duration, circle size, circle color:
 
 ```
 wl-find-cursor -c 0x88cc241d -s 400 -d 2
 ```
 
-It will show a semi-transparent red square with size 400, the duration is 2 second.
+It will show a semi-transparent red circle with size 400, the duration is 2 second.
 
 Usually you may bind it with a hot key such as `Super+m`, for example, for sway:
 
