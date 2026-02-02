@@ -347,8 +347,8 @@ void usage() {
   printf("wl-find-cursor - highlight and report cursor position in wayland.\n\n");
   printf("Options:\n");
   printf("  -d <int>    : animation duration in milliseconds.\n");
-  printf("  -s <int>    : animation square size.\n");
-  printf("  -c <hex int>: animation square color in 0xAARRGGBB format.\n");
+  printf("  -s <int>    : animation circle size.\n");
+  printf("  -c <hex int>: animation circle color in 0xAARRGGBB format.\n");
   printf("  -p          : skip animation.\n");
   printf("  -e <string> : command to emulate mouse move event.\n");
   printf("  -h          : show this message.\n");
