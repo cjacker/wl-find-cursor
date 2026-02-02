@@ -29,7 +29,7 @@ uint32_t color = 0xcfd79921;
 // default animation duration, 1 second.
 int animation_duration_in_second = 1;
 
-// if user defined square size
+// if user defined circle size
 int size = 0;
 
 // control flag to show animation or not.
@@ -146,28 +146,37 @@ static void update_pixels(uint32_t *pixels) {
   if (progress >= 1) {
     running = false;
   }
-  //uint32_t alpha = progress * UINT32_MAX ;
 
-  //don't use uint32_t here. since 'cursor_x - half_size' can be negative.
-  int half_size = (surface_height < surface_width ? surface_height : surface_width)/10;
-
-  //user defined square size
+  int radius = (surface_height < surface_width ? surface_height : surface_width)/20; // Starting radius
   if(size != 0)
-      half_size = size >> 1;
+      radius = size/2; // User-defined size
 
-  half_size = half_size * progress;
+  radius = radius * progress; // Animate the radius
 
-  // since these not changed at runtime,
-  // it's not neccesary put them in loop.
-  //uint32_t color = alpha << 24 | red << 16 | green << 8 | blue;
+  int center_x = cursor_x;
+  int center_y = cursor_y;
 
-  for (int y = 0; y < surface_height; y++) {
-    if(y < cursor_y - half_size || y > cursor_y + half_size)
-      continue;
-    for (int x = 0; x < surface_width; x++) {
-      if(x < cursor_x - half_size || x > cursor_x + half_size)
-        continue;
-      pixels[x + (y * surface_width)] = color;
+  // Calculate bounding box to optimize
+  int min_x = center_x - radius;
+  int max_x = center_x + radius;
+  int min_y = center_y - radius;
+  int max_y = center_y + radius;
+
+  // Clamp to surface bounds
+  min_x = min_x < 0 ? 0 : min_x;
+  max_x = max_x > surface_width ? surface_width : max_x;
+  min_y = min_y < 0 ? 0 : min_y;
+  max_y = max_y > surface_height ? surface_height : max_y;
+
+  int radius_squared = radius * radius;
+
+  for (int y = min_y; y < max_y; y++) {
+    for (int x = min_x; x < max_x; x++) {
+      int dx = x - center_x;
+      int dy = y - center_y;
+      if (dx*dx + dy*dy <= radius_squared) {
+        pixels[x + (y * surface_width)] = color;
+      }
     }
   }
 
@@ -338,8 +347,8 @@ void usage() {
   printf("wl-find-cursor - highlight and report cursor position in wayland.\n\n");
   printf("Options:\n");
   printf("  -d <int>    : animation duration in second.\n");
-  printf("  -s <int>    : animation square size.\n");
-  printf("  -c <hex int>: animation square color in 0xAARRGGBB format.\n");
+  printf("  -s <int>    : animation circle size.\n");
+  printf("  -c <hex int>: animation circle color in 0xAARRGGBB format.\n");
   printf("  -p          : skip animation.\n");
   printf("  -e <string> : command to emulate mouse move event.\n");
   printf("  -h          : show this message.\n");
