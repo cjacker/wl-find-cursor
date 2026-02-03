@@ -29,7 +29,7 @@ After built, install `wl-find-cursor` to `PATH` (local path or global path such 
 wl-find-cursor - highlight and report cursor position in wayland.
 
 Options:
-  -d <int>    : animation duration in second.
+  -d <int>    : animation duration in milliseconds.
   -s <int>    : animation circle size.
   -c <hex int>: animation circle color in 0xAARRGGBB format.
   -p          : skip animation.
@@ -48,10 +48,10 @@ wl-find-cursor -p
 To customize the animation duration, circle size, circle color:
 
 ```
-wl-find-cursor -c 0x88cc241d -s 400 -d 2
+wl-find-cursor -c 0x88cc241d -s 400 -d 2000
 ```
 
-It will show a semi-transparent red circle with size 400, the duration is 2 second.
+It will show a semi-transparent red circle with size 400, the duration is 2000 milliseconds.
 
 Usually you may bind it with a hot key such as `Super+m`, for example, for sway:
 
