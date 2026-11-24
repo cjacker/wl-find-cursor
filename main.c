@@ -310,7 +310,20 @@ static void layer_surface_handle_configure(void *data, struct zwlr_layer_surface
 
   zwlr_layer_surface_v1_ack_configure(layer_surface, serial);
 
-  struct wl_buffer *buffer = wp_single_pixel_buffer_manager_v1_create_u32_rgba_buffer(single_pixel_buffer_manager, 0, 0, 0, 0);
+  struct wl_buffer *buffer;
+  if (single_pixel_buffer_manager != NULL) {
+    buffer = wp_single_pixel_buffer_manager_v1_create_u32_rgba_buffer(single_pixel_buffer_manager, 0, 0, 0, 0);
+  } else {
+    /* fallback (e.g. niri): 1x1 fully transparent shm buffer, scaled by viewporter */
+    int fd = allocate_shm_file(4);
+    uint32_t *px = mmap(NULL, 4, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    *px = 0;
+    munmap(px, 4);
+    struct wl_shm_pool *pool = wl_shm_create_pool(shm, fd, 4);
+    buffer = wl_shm_pool_create_buffer(pool, 0, 1, 1, 4, WL_SHM_FORMAT_ARGB8888);
+    wl_shm_pool_destroy(pool);
+    close(fd);
+  }
   wl_surface_attach(surface, buffer, 0, 0);
 
   wp_viewport_set_destination(viewport, surface_width, surface_height);
@@ -399,7 +412,6 @@ int main(int argc, char *argv[])
     { "wl_shm", shm != NULL },
     { "zwlr_layer_shell_v1", layer_shell != NULL },
     { "wp_viewporter", viewporter != NULL },
-    { "wp_single_pixel_buffer_manager_v1", single_pixel_buffer_manager != NULL },
     { "zwlr_virtual_pointer_manager_v1", virtual_pointer_manager != NULL },
   };
   for (size_t i = 0; i < sizeof(required_globals) / sizeof(required_globals[0]); i++) {
@@ -465,7 +477,7 @@ int main(int argc, char *argv[])
   wl_compositor_destroy(compositor);
   zwlr_layer_shell_v1_destroy(layer_shell);
   wp_viewporter_destroy(viewporter);
-  wp_single_pixel_buffer_manager_v1_destroy(single_pixel_buffer_manager);
+  if (single_pixel_buffer_manager) wp_single_pixel_buffer_manager_v1_destroy(single_pixel_buffer_manager);
   wl_registry_destroy(registry);
   wl_display_disconnect(display);
 
